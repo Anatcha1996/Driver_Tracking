@@ -87,6 +87,7 @@
 
             <div class="time-display"><strong>เช็กอิน:</strong> 
                 <span id="checkin-time">{{ attendance.checkin_time.strftime('%H:%M:%S') if attendance and attendance.checkin_time else '-' }}</span>
+
             </div>
             <div class="time-display"><strong>ละติจูด:</strong> 
                 <span id="checkin-lat">{{ attendance.checkin_lat if attendance and attendance.checkin_lat else '-' }}</span>

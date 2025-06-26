@@ -192,6 +192,14 @@ def checkin():
         return "Access denied"
     user_id = session['user_id']
     attendance = Attendance.query.filter_by(user_id=user_id).order_by(Attendance.checkin_time.desc()).first()
+
+    # แปลงเวลา UTC → เวลาไทย
+    if attendance:
+        if attendance.checkin_time:
+            attendance.checkin_time = to_thai_time(attendance.checkin_time)
+        if attendance.checkout_time:
+            attendance.checkout_time = to_thai_time(attendance.checkout_time)
+
     return render_template('checkin.html', attendance=attendance)
 
 

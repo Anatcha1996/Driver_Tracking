@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ตำแหน่งเรียลไทม์ของ {{ user.username }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+        .btn-danger:hover {
+            background-color: #c82333 !important;
+            box-shadow: 0 4px 12px rgba(200, 35, 51, 0.5);
+        }
+    </style>
+    
+</head>
+<body>
+    <h2>ตำแหน่งเรียลไทม์ของ {{ user.username }}</h2>
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    
+
+    <script>
+        const userId = {{ user.id }};
+        const map = L.map('map').setView([13.7563, 100.5018], 12); // จุดเริ่มต้น (กรุงเทพ)
+
+        // OpenStreetMap Tile Layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let markers = [];
+        
+
+        function fetchLocations() {
+            fetch(`/api/driver_locations/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // ลบ marker เดิม
+                    markers.forEach(marker => map.removeLayer(marker));
+                    markers = [];
+
+                    data.forEach(loc => {
+                        const marker = L.marker([loc.lat, loc.lng]).addTo(map);
+                        marker.bindPopup(`เวลา: ${loc.timestamp}`).openPopup();
+                        markers.push(marker);
+                    });
+
+                    if (data.length > 0) {
+                        map.setView([data[0].lat, data[0].lng], 15);
+                    }
+                });
+        }
+
+        fetchLocations();
+        setInterval(fetchLocations, 20000); // อัปเดตทุก 20 วินาที
+    </script>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-danger btn-lg rounded-pill shadow-sm d-flex align-items-center gap-2 px-4" style="font-weight: 600; transition: background-color 0.3s ease;">
+    <i class="bi bi-speedometer2 fs-4"></i>กลับสู่แดชบอร์ด</a>
+
+    
+</body>
+</html>

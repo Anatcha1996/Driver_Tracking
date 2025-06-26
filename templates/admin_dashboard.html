@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8" />
+    <title>แอดมิน - รายชื่อพนักงานขับรถ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <h3 class="mb-4">แผงควบคุมแอดมิน</h3>
+    <ul class="list-group mb-3">
+        {% for driver in drivers %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ driver.username }}
+            <a href="{{ url_for('driver_locations_realtime', user_id=driver.id) }}" class="btn btn-sm btn-outline-success">ดูตำแหน่งเรียลไทม์</a>
+        </li>
+        {% else %}
+        <li class="list-group-item">ไม่มีพนักงานขับรถในระบบ</li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger">ออกจากระบบ</a>
+    <a href="{{ url_for('admin_worklog') }}" class="btn btn-danger">รายงานชั่วโมงการทำงาน</a>
+    <a href="{{ url_for('all_drivers_map') }}" class="btn btn-danger">DriversMap</a>
+    
+    
+    
+    
+</div>
+</body>
+</html>

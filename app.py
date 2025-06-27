@@ -1,41 +1,35 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime
 import pytz
-from datetime import datetime
 import os
-
-from flask import Flask
 from dotenv import load_dotenv
-import os
 
+# โหลด .env
+load_dotenv()
 
-load_dotenv()  # โหลดค่าใน .env เข้ามาใน environment variables
-
+# สร้างแอป Flask
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY')
-if app.secret_key is None:
-    import secrets
-    app.secret_key = secrets.token_hex(24)
+app.secret_key = os.getenv('SECRET_KEY') or os.urandom(24)
 
+# ตั้งค่า Database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+# ตั้งเวลาไทย
 THAI_TZ = pytz.timezone('Asia/Bangkok')
-
 def to_thai_time(dt_utc):
     if dt_utc is None:
         return None
     if dt_utc.tzinfo is None:
-        dt_utc = pytz.utc.localize(dt_utc)  # กำหนดว่า datetime นี้เป็น UTC
-    dt_thai = dt_utc.astimezone(THAI_TZ)  # แปลงเป็นเวลาไทย
-    return dt_thai
+        dt_utc = pytz.utc.localize(dt_utc)
+    return dt_utc.astimezone(THAI_TZ)
 
 
-app = Flask(__name__)
-app.secret_key = "your_secret_key_here"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+
 
 # ----- Models -----
 class User(db.Model):

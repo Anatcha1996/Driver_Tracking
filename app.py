@@ -436,5 +436,87 @@ def api_driver_locations(user_id):
     } for loc in locations]
     return jsonify(data)
 
+@app.route('/api/route/<int:attendance_id>')
+@login_required
+def api_driver_route(attendance_id):
+    if session.get('role') != 'admin':
+        return jsonify({"error": "Access denied"}), 403
+
+    attendance = Attendance.query.get_or_404(attendance_id)
+    if not attendance.checkout_time:
+        return jsonify({"error": "ยังไม่มีเวลาเช็กเอาต์"}), 400
+
+    locations = Location.query.filter(
+        Location.user_id == attendance.user_id,
+        Location.timestamp >= attendance.checkin_time,
+        Location.timestamp <= attendance.checkout_time
+    ).order_by(Location.timestamp.asc()).all()
+
+    data = [{
+        'lat': loc.latitude,
+        'lng': loc.longitude,
+        'timestamp': loc.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    } for loc in locations]
+
+    return jsonify(data)
+
+@app.route('/admin/view_route/<int:attendance_id>')
+@login_required
+def view_route(attendance_id):
+    if session.get('role') != 'admin':
+        return "Access denied"
+    return render_template('admin_view_route.html', attendance_id=attendance_id)
+
+@app.route('/admin/view_route_range/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def view_route_range(user_id):
+    if session.get('role') != 'admin':
+        return "Access denied"
+
+    user = User.query.get_or_404(user_id)
+
+    if request.method == 'POST':
+        start = request.form.get('start_date')
+        end = request.form.get('end_date')
+        return redirect(url_for('show_route_map_range', user_id=user_id, start=start, end=end))
+
+    return render_template('view_route_range.html', user=user)
+
+@app.route('/admin/show_route_map_range/<int:user_id>')
+@login_required
+def show_route_map_range(user_id):
+    if session.get('role') != 'admin':
+        return "Access denied"
+    return render_template('admin_route_range_map.html', user_id=user_id, start=request.args.get('start'), end=request.args.get('end'))
+@app.route('/api/route_range/<int:user_id>')
+@login_required
+def api_route_range(user_id):
+    if session.get('role') != 'admin':
+        return jsonify({"error": "Access denied"}), 403
+
+    start_str = request.args.get('start')
+    end_str = request.args.get('end')
+    try:
+        start = datetime.strptime(start_str, '%Y-%m-%d')
+        end = datetime.strptime(end_str, '%Y-%m-%d')
+        end = end.replace(hour=23, minute=59, second=59)
+    except:
+        return jsonify({"error": "รูปแบบวันที่ไม่ถูกต้อง"}), 400
+
+    locations = Location.query.filter(
+        Location.user_id == user_id,
+        Location.timestamp >= start,
+        Location.timestamp <= end
+    ).order_by(Location.timestamp.asc()).all()
+
+    data = [{
+        'lat': loc.latitude,
+        'lng': loc.longitude,
+        'timestamp': loc.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+    } for loc in locations]
+
+    return jsonify(data)
+
+
 if __name__ == '__main__':
     app.run(debug=True)

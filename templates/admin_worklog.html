@@ -64,6 +64,8 @@
                             <td>{{ log.date }}</td>
                             <td>{{ log.checkin_time.strftime('%H:%M:%S') }}</td>
                             <td>{{ log.checkout_time.strftime('%H:%M:%S') if log.checkout_time else '-' }}</td>
+                            <a href="{{ url_for('view_route', attendance_id=log.id) }}" class="btn btn-sm btn-info">ดูเส้นทาง</a>
+
                             <td>
                                 {% if log.checkout_time %}
                                     {% set total_seconds = (log.checkout_time - log.checkin_time).total_seconds() %}

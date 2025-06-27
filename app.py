@@ -5,6 +5,20 @@ from functools import wraps
 from datetime import datetime
 import pytz
 from datetime import datetime
+import os
+
+from flask import Flask
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()  # โหลดค่าใน .env เข้ามาใน environment variables
+
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
+if app.secret_key is None:
+    import secrets
+    app.secret_key = secrets.token_hex(24)
 
 THAI_TZ = pytz.timezone('Asia/Bangkok')
 
@@ -30,8 +44,9 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     phone = db.Column(db.String(20))
     role = db.Column(db.String(20))  # 'admin' หรือ 'driver'
-    locations = db.relationship('Location', backref='user', lazy=True)
-    attendances = db.relationship('Attendance', backref='user', lazy=True)
+    locations = db.relationship('Location', backref='user', lazy=True, cascade="all, delete-orphan")
+    attendances = db.relationship('Attendance', backref='user', lazy=True, cascade="all, delete-orphan")
+
     
 
 class Location(db.Model):

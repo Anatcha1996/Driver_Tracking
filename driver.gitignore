@@ -1,0 +1,4 @@
+# ไม่ให้ Git ติดตามไฟล์ secret_key หรือ .env
+.env
+secret_key.txt
+my_private_folder/

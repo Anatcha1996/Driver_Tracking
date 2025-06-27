@@ -439,13 +439,16 @@ def api_driver_locations(user_id):
 @app.route('/api/route/<int:attendance_id>')
 @login_required
 def api_driver_route(attendance_id):
+    # ตรวจสิทธิ์
     if session.get('role') != 'admin':
         return jsonify({"error": "Access denied"}), 403
 
+    # ดึงข้อมูล attendance
     attendance = Attendance.query.get_or_404(attendance_id)
     if not attendance.checkout_time:
         return jsonify({"error": "ยังไม่มีเวลาเช็กเอาต์"}), 400
 
+    # ดึงตำแหน่งในช่วงเวลาเช็กอิน - เช็กเอาต์
     locations = Location.query.filter(
         Location.user_id == attendance.user_id,
         Location.timestamp >= attendance.checkin_time,
@@ -460,11 +463,10 @@ def api_driver_route(attendance_id):
 
     return jsonify(data)
 
+
 @app.route('/admin/view_route/<int:attendance_id>')
 @login_required
 def view_route(attendance_id):
-    if session.get('role') != 'admin':
-        return "Access denied"
     return render_template('admin_view_route.html', attendance_id=attendance_id)
 
 @app.route('/admin/view_route_range/<int:user_id>', methods=['GET', 'POST'])

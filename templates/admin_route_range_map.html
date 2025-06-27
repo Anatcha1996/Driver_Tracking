@@ -12,8 +12,9 @@
   <script>
     const map = L.map('map').setView([13.75, 100.5], 12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    const attendanceId = {{ attendance_id | tojson }};
 
-    const userId = {{ user_id }};
+    const userId = { user_id };
     const start = "{{ start }}";
     const end = "{{ end }}";
 

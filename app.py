@@ -134,8 +134,9 @@ def register():
         username = request.form['username']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
+        phone = request.form.get('phone') or ''  # รับค่าจากฟอร์ม
+        role = request.form.get('role') or 'driver'
 
-        # ตรวจสอบว่ารหัสผ่านตรงกันหรือไม่
         if password != confirm_password:
             error = 'รหัสผ่านไม่ตรงกัน'
         elif User.query.filter_by(username=username).first():
@@ -144,13 +145,16 @@ def register():
             new_user = User(
                 username=username,
                 password=generate_password_hash(password),
-                role='driver'
+                phone=phone,
+                role=role
             )
             db.session.add(new_user)
             db.session.commit()
+            flash('สมัครสมาชิกสำเร็จ')
             return redirect(url_for('login'))
 
     return render_template('register.html', error=error)
+
 
 
 

@@ -78,6 +78,46 @@ def setup():
 
 
 # ----- Routes -----
+# จัดการผู้ใช้ (เฉพาะแอดมิน)
+@app.route('/admin/manage_users')
+@login_required
+def manage_users():
+    if session.get('role') != 'admin':
+        return "Access denied"
+    users = User.query.all()
+    return render_template('admin_manage_users.html', users=users)
+
+
+@app.route('/admin/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def edit_user(user_id):
+    if session.get('role') != 'admin':
+        return "Access denied"
+    
+    user = User.query.get_or_404(user_id)
+    if request.method == 'POST':
+        user.phone = request.form['phone']
+        user.role = request.form['role']
+        db.session.commit()
+        return redirect(url_for('manage_users'))
+    
+    return render_template('admin_edit_user.html', user=user)
+
+
+@app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if session.get('role') != 'admin':
+        return "Access denied"
+    
+    user = User.query.get_or_404(user_id)
+    if user.username == 'admin':
+        return "ไม่สามารถลบผู้ดูแลระบบหลักได้"
+    
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('manage_users'))
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     error = None
@@ -153,6 +193,36 @@ def admin_dashboard():
         return "Access denied"
     drivers = User.query.filter_by(role='driver').all()
     return render_template('admin_dashboard.html', drivers=drivers)
+
+from flask import flash
+
+# หน้าแก้ไขรหัสผ่านผู้ใช้ (Admin ใช้)
+@app.route('/admin/reset_password/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def reset_password(user_id):
+    if session.get('role') != 'admin':
+        return "Access denied"
+    
+    user = User.query.get(user_id)
+    if not user:
+        return "User not found"
+    
+    error = None
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+        
+        if new_password != confirm_password:
+            error = 'รหัสผ่านใหม่ไม่ตรงกัน'
+        elif len(new_password) < 6:
+            error = 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร'
+        else:
+            user.password = generate_password_hash(new_password)
+            db.session.commit()
+            flash('รีเซ็ตรหัสผ่านสำเร็จแล้ว')
+            return redirect(url_for('manage_users'))
+    
+    return render_template('reset_password.html', user=user, error=error)
 
 # Admin ดูรายงานชั่วโมงทำงาน
 @app.route('/admin/worklog')

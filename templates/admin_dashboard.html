@@ -18,6 +18,8 @@
         <li class="list-group-item">ไม่มีพนักงานขับรถในระบบ</li>
         {% endfor %}
     </ul>
+    <a href="{{ url_for('manage_users') }}" class="btn btn-outline-secondary">จัดการผู้ใช้</a>
+
     <a href="{{ url_for('logout') }}" class="btn btn-danger">ออกจากระบบ</a>
     <a href="{{ url_for('admin_worklog') }}" class="btn btn-danger">รายงานชั่วโมงการทำงาน</a>
     <a href="{{ url_for('all_drivers_map') }}" class="btn btn-danger">DriversMap</a>

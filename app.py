@@ -84,21 +84,25 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
 
-        if User.query.filter_by(username=username).first():
+        # ตรวจสอบว่ารหัสผ่านตรงกันหรือไม่
+        if password != confirm_password:
+            error = 'รหัสผ่านไม่ตรงกัน'
+        elif User.query.filter_by(username=username).first():
             error = 'ชื่อผู้ใช้นี้ถูกใช้แล้ว'
         else:
             new_user = User(
                 username=username,
                 password=generate_password_hash(password),
                 role='driver'
-                
             )
             db.session.add(new_user)
             db.session.commit()
             return redirect(url_for('login'))
 
     return render_template('register.html', error=error)
+
 
 
 # หน้าแรก: เลือกไป dashboard ตาม role
